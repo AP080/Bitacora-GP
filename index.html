@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Bitácora GP — Alumbrado Público</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:    #1B2A47;
+    --navy2:   #243558;
+    --blue:    #2E6BE6;
+    --blue-lt: #EBF2FF;
+    --green:   #1A7A4A;
+    --green-lt:#E8F7EE;
+    --amber:   #D97706;
+    --amber-lt:#FEF3C7;
+    --red:     #DC2626;
+    --red-lt:  #FEE2E2;
+    --gray1:   #F8F9FB;
+    --gray2:   #EEF0F4;
+    --gray3:   #D1D5DC;
+    --gray4:   #9AA3B0;
+    --gray5:   #4B5563;
+    --white:   #FFFFFF;
+    --text:    #1F2937;
+    --radius:  10px;
+    --shadow:  0 2px 12px rgba(0,0,0,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--gray1);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--navy);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  .topbar-brand {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .topbar-brand span { color: #F5C518; }
+  .topbar-right { display: flex; gap: 8px; }
+  .mode-btn {
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .mode-btn.active { background: var(--blue); }
+  .mode-btn:hover:not(.active) { background: rgba(255,255,255,0.2); }
+
+  /* ── OFFLINE BANNER ── */
+  #offline-banner {
+    background: var(--amber);
+    color: white;
+    text-align: center;
+    padding: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    display: none;
+  }
+  #offline-banner.show { display: block; }
+
+  /* ── VIEWS ── */
+  .view { display: none; padding: 16px; max-width: 680px; margin: 0 auto; }
+  .view.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--gray2);
+  }
+  .card-header .icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .card-header h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.3px;
+    color: var(--navy);
+  }
+  .card-body { padding: 16px; }
+
+  /* ── FORM ELEMENTS ── */
+  .field-group { margin-bottom: 14px; }
+  .field-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray5);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .field-group label .req { color: var(--red); margin-left: 2px; }
+  input[type=text], input[type=date], input[type=number], input[type=time],
+  select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--gray3);
+    border-radius: 8px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(46,107,230,0.12);
+  }
+  textarea { min-height: 70px; resize: vertical; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px;
+    padding: 11px 20px;
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+    text-transform: uppercase;
+  }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: #1a5cd4; }
+  .btn-green { background: var(--green); color: white; }
+  .btn-green:hover { background: #155c38; }
+  .btn-amber { background: var(--amber); color: white; }
+  .btn-amber:hover { background: #b45309; }
+  .btn-ghost {
+    background: var(--gray2); color: var(--gray5);
+    border: 1.5px solid var(--gray3);
+  }
+  .btn-ghost:hover { background: var(--gray3); }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-full { width: 100%; }
+  .btn-sm { padding: 7px 14px; font-size: 12px; }
+
+  /* ── STATUS BADGE ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-draft  { background: var(--amber-lt); color: var(--amber); }
+  .badge-sent   { background: var(--green-lt); color: var(--green); }
+  .badge-pending{ background: var(--blue-lt); color: var(--blue); }
+
+  /* ── SECTION DIVIDER ── */
+  .section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gray4);
+    margin: 20px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray2);
+  }
+
+  /* ── ATENCION CARD ── */
+  .atencion-item {
+    border: 1.5px solid var(--gray2);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+    background: var(--gray1);
+    position: relative;
+  }
+  .atencion-item .atencion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .atencion-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--navy);
+    background: var(--blue-lt);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--gray4);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .remove-btn:hover { color: var(--red); background: var(--red-lt); }
+
+  /* ── PHOTO UPLOAD ── */
+  .photo-area {
+    border: 2px dashed var(--gray3);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: var(--gray1);
+  }
+  .photo-area:hover { border-color: var(--blue); background: var(--blue-lt); }
+  .photo-area p { font-size: 13px; color: var(--gray4); margin-top: 6px; }
+  .photo-preview {
+    display: none;
+    position: relative;
+    margin-top: 8px;
+  }
+  .photo-preview img {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  .photo-preview .remove-photo {
+    position: absolute;
+    top: 6px; right: 6px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 26px; height: 26px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── SIGNATURE ── */
+  #sig-canvas {
+    border: 2px solid var(--gray3);
+    border-radius: 8px;
+    background: white;
+    cursor: crosshair;
+    touch-action: none;
+    display: block;
+    width: 100%;
+  }
+  .sig-actions {
+    display: flex; gap: 8px; margin-top: 8px;
+  }
+
+  /* ── STEP INDICATOR ── */
+  .steps {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 0;
+  }
+  .step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+  .step::after {
+    content: '';
+    position: absolute;
+    top: 15px; right: 0;
+    width: 50%; height: 2px;
+    background: var(--gray3);
+    z-index: 0;
+  }
+  .step::before {
+    content: '';
+    position: absolute;
+    top: 15px; left: 0;
+    width: 50%; height: 2px;
+    background: var(--gray3);
+    z-index: 0;
+  }
+  .step:first-child::before, .step:last-child::after { display: none; }
+  .step-dot {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--gray3);
+    color: var(--gray5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin: 0 auto 4px;
+    position: relative; z-index: 1;
+    transition: all 0.2s;
+  }
+  .step.active .step-dot { background: var(--blue); color: white; }
+  .step.done .step-dot   { background: var(--green); color: white; }
+  .step.active::before, .step.done::before,
+  .step.done::after { background: var(--green); }
+  .step-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--gray4);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .step.active .step-label { color: var(--blue); }
+  .step.done .step-label   { color: var(--green); }
+
+  /* ── STEP PANELS ── */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  /* ── SUPERVISOR VIEW ── */
+  .sup-filters {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .sup-filters select, .sup-filters input { flex: 1; min-width: 140px; }
+  .report-card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+    overflow: hidden;
+    border-left: 4px solid var(--blue);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .report-card:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(0,0,0,0.13); }
+  .report-card.offline-card { border-left-color: var(--amber); }
+  .report-card-head {
+    padding: 12px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .report-card-head h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 15px; color: var(--navy);
+  }
+  .report-card-body {
+    padding: 0 16px 14px;
+    display: none;
+    border-top: 1px solid var(--gray2);
+    padding-top: 12px;
+  }
+  .report-card-body.open { display: block; }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .detail-item { font-size: 13px; }
+  .detail-item .lbl { color: var(--gray4); font-size: 11px; font-weight: 600; text-transform: uppercase; }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--gray4);
+  }
+  .empty .icon { font-size: 40px; margin-bottom: 10px; }
+  .empty p { font-size: 14px; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--navy);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    transition: transform 0.3s ease;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── SYNC BTN ── */
+  .sync-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--amber-lt);
+    border: 1px solid var(--amber);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  @media (max-width: 400px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">⚡ <span>GP</span> Bitácora</div>
+  <div class="topbar-right">
+    <button class="mode-btn active" id="btn-cabo" onclick="switchMode('cabo')">Cabo</button>
+    <button class="mode-btn" id="btn-supervisor" onclick="switchMode('supervisor')">Supervisor</button>
+  </div>
+</div>
+
+<div id="offline-banner">📵 Sin conexión — los reportes se guardarán localmente y se sincronizarán al recuperar señal</div>
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     VISTA CABO
+═════════════════════════════════════════════════════════════════ -->
+<div class="view active" id="view-cabo">
+
+  <!-- Steps -->
+  <div class="steps" style="margin-top:16px;">
+    <div class="step active" id="s1"><div class="step-dot">1</div><div class="step-label">Jornada</div></div>
+    <div class="step" id="s2"><div class="step-dot">2</div><div class="step-label">Atenciones</div></div>
+    <div class="step" id="s3"><div class="step-dot">3</div><div class="step-label">Cierre</div></div>
+  </div>
+
+  <!-- PASO 1: DATOS DE JORNADA -->
+  <div class="step-panel active" id="panel-1">
+    <div class="card">
+      <div class="card-header">
+        <div class="icon" style="background:#EBF2FF">🗂️</div>
+        <h3>DATOS DE LA JORNADA</h3>
+      </div>
+      <div class="card-body">
+        <div class="grid-2">
+          <div class="field-group">
+            <label>Fecha</label>
+            <input type="date" id="j-fecha" readonly style="background:var(--gray1); color:var(--gray5); cursor:not-allowed;">
+          </div>
+          <div class="field-group">
+            <label>Turno <span class="req">*</span></label>
+            <select id="j-turno">
+              <option value="">— Selecciona —</option>
+              <option>Matutino</option>
+              <option>Vespertino</option>
+              <option>Nocturno</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Cuadrilla <span class="req">*</span></label>
+          <select id="j-cuadrilla">
+            <option value="">— Selecciona —</option>
+            <option>Cuadrilla 1</option>
+            <option>Cuadrilla 2</option>
+            <option>Cuadrilla 3</option>
+            <option>Cuadrilla 4</option>
+            <option>Cuadrilla 5</option>
+            <option>Cuadrilla 6</option>
+            <option>Cuadrilla 7</option>
+          </select>
+        </div>
+        <div class="grid-2">
+          <div class="field-group">
+            <label>Cabo <span class="req">*</span></label>
+            <input type="text" id="j-cabo" placeholder="Nombre completo" list="dl-cabos" autocomplete="off">
+          </div>
+          <div class="field-group">
+            <label>Operador / Chofer</label>
+            <input type="text" id="j-operador" placeholder="Nombre completo" list="dl-operadores" autocomplete="off">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field-group">
+            <label>Placa</label>
+            <input type="text" id="j-placa" placeholder="ABC-1234" list="dl-placas" autocomplete="off">
+          </div>
+          <div class="field-group">
+            <label>Unidad / Vehículo</label>
+            <input type="text" id="j-unidad" placeholder="Ej. Camioneta 03" list="dl-unidades" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="section-label">Personal</div>
+        <div class="grid-3">
+          <div class="field-group">
+            <label>Ayudante 1</label>
+            <input type="text" id="j-ay1" placeholder="Nombre" list="dl-ayudantes" autocomplete="off">
+          </div>
+          <div class="field-group">
+            <label>Ayudante 2</label>
+            <input type="text" id="j-ay2" placeholder="Nombre" list="dl-ayudantes" autocomplete="off">
+          </div>
+          <div class="field-group">
+            <label>Ayudante 3</label>
+            <input type="text" id="j-ay3" placeholder="Nombre" list="dl-ayudantes" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="section-label">Flotilla</div>
+        <div class="grid-3">
+          <div class="field-group">
+            <label>Km Inicio</label>
+            <input type="number" id="j-km-ini" placeholder="0">
+          </div>
+          <div class="field-group">
+            <label>Km Término</label>
+            <input type="number" id="j-km-ter" placeholder="0">
+          </div>
+          <div class="field-group">
+            <label>Combustible (L)</label>
+            <input type="number" id="j-combust" placeholder="0.0" step="0.1">
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="goStep(2)">
+          Continuar → Atenciones
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 2: ATENCIONES -->
+  <div class="step-panel" id="panel-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="icon" style="background:#E8F7EE">⚡</div>
+        <h3>ATENCIONES DEL TURNO</h3>
+      </div>
+      <div class="card-body">
+        <div id="atenciones-list"></div>
+        <button class="btn btn-ghost btn-full" onclick="addAtencion()">
+          + Agregar atención
+        </button>
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button class="btn btn-ghost" onclick="goStep(1)">← Regresar</button>
+          <button class="btn btn-primary" style="flex:1" onclick="goStep(3)">Continuar → Cierre</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 3: CIERRE Y FIRMA -->
+  <div class="step-panel" id="panel-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="icon" style="background:#FEF3C7">✅</div>
+        <h3>CIERRE DE JORNADA</h3>
+      </div>
+      <div class="card-body">
+        <div class="field-group">
+          <label>Observaciones generales</label>
+          <textarea id="j-obs" placeholder="Incidentes, notas, pendientes..."></textarea>
+        </div>
+
+        <div class="section-label">Firma del Cabo</div>
+        <canvas id="sig-canvas" width="600" height="150"></canvas>
+        <div class="sig-actions">
+          <button class="btn btn-ghost btn-sm" onclick="clearSig()">🗑 Limpiar firma</button>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="btn btn-ghost" onclick="goStep(2)">← Regresar</button>
+          <button class="btn btn-green" style="flex:1" onclick="submitReporte()">
+            ✓ Confirmar y Enviar Reporte
+          </button>
+        </div>
+
+        <!-- PDF download (aparece tras confirmar) -->
+        <div id="pdf-row" style="display:none; margin-top:12px;">
+          <button class="btn btn-primary btn-full" onclick="downloadPDF()" style="margin-bottom:8px;">
+            📄 Descargar PDF de la jornada
+          </button>
+          <button class="btn btn-ghost btn-full" onclick="resetForm(); document.getElementById('pdf-row').style.display='none'; document.querySelector('#panel-3 .btn-green').style.display=''; document.querySelector('#panel-3 .btn-ghost').style.display='';">
+            + Nuevo reporte
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     VISTA SUPERVISOR
+═════════════════════════════════════════════════════════════════ -->
+<div class="view" id="view-supervisor">
+
+  <!-- LOGIN PANEL -->
+  <div id="sup-login" style="display:flex; align-items:center; justify-content:center; min-height:70vh;">
+    <div style="background:white; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,0.13); padding:36px 28px; width:100%; max-width:340px; text-align:center;">
+      <div style="font-size:40px; margin-bottom:12px;">🔒</div>
+      <h2 style="font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:22px; color:var(--navy); margin-bottom:6px;">Acceso Supervisor</h2>
+      <p style="font-size:13px; color:var(--gray4); margin-bottom:24px;">Ingresa tu contraseña para continuar</p>
+      <input type="password" id="sup-pass-input" placeholder="Contraseña"
+        style="width:100%; padding:12px 14px; border:1.5px solid var(--gray3); border-radius:8px;
+               font-size:15px; text-align:center; letter-spacing:4px; margin-bottom:8px;"
+        onkeydown="if(event.key==='Enter') checkSupervisorPass()">
+      <div id="sup-login-error" style="color:var(--red); font-size:12px; font-weight:600; min-height:18px; margin-bottom:8px;"></div>
+      <button class="btn btn-primary btn-full" onclick="checkSupervisorPass()">Entrar</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD (oculto hasta login) -->
+  <div id="sup-dashboard" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; margin-bottom:12px;">
+      <span style="font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px; color:var(--navy);">Vista Supervisor</span>
+      <button class="btn btn-ghost btn-sm" onclick="logoutSupervisor()">🔒 Cerrar sesión</button>
+    </div>
+    <div id="sync-pending-row"></div>
+    <div class="sup-filters">
+      <select id="f-cuadrilla" onchange="renderSupervisor()">
+        <option value="">Todas las cuadrillas</option>
+        <option>Cuadrilla 1</option><option>Cuadrilla 2</option>
+        <option>Cuadrilla 3</option><option>Cuadrilla 4</option>
+        <option>Cuadrilla 5</option><option>Cuadrilla 6</option>
+        <option>Cuadrilla 7</option>
+      </select>
+      <input type="date" id="f-fecha" onchange="renderSupervisor()">
+    </div>
+    <div id="sup-list"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// STORAGE  (in-memory + sessionStorage simulation for offline)
+// ══════════════════════════════════════════════════════════════
+let DB = { reportes: [] };
+
+function saveDB() {
+  try { sessionStorage.setItem('gp_bitacora', JSON.stringify(DB)); } catch(e){}
+}
+function loadDB() {
+  try {
+    const d = sessionStorage.getItem('gp_bitacora');
+    if (d) DB = JSON.parse(d);
+  } catch(e){}
+}
+loadDB();
+
+// ══════════════════════════════════════════════════════════════
+// OFFLINE DETECTION
+// ══════════════════════════════════════════════════════════════
+let isOnline = navigator.onLine;
+function updateOnlineStatus() {
+  isOnline = navigator.onLine;
+  document.getElementById('offline-banner').classList.toggle('show', !isOnline);
+  if (isOnline) trySyncPending();
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+async function trySyncPending() {
+  const pending = DB.reportes.filter(r => r.status === 'pending');
+  if (!pending.length) return;
+  let synced = 0;
+  for (const r of pending) {
+    const ok = await sendToSheets(r);
+    if (ok !== false) {
+      r.status = 'sent';
+      r.syncedAt = new Date().toISOString();
+      synced++;
+    }
+  }
+  saveDB();
+  if (synced > 0) showToast(`✓ ${synced} reporte(s) sincronizado(s) con Sheets`);
+  renderSupervisor();
+}
+
+// ══════════════════════════════════════════════════════════════
+// CONTRASEÑAS SUPERVISOR — cambia estos valores
+// ══════════════════════════════════════════════════════════════
+const SUPERVISOR_PASSWORDS = ["supervisor1", "supervisor2"];
+
+let supAuthenticated = false;
+
+function checkSupervisorPass() {
+  const input = document.getElementById('sup-pass-input');
+  const errorEl = document.getElementById('sup-login-error');
+  const pass = input.value.trim();
+
+  if (SUPERVISOR_PASSWORDS.includes(pass)) {
+    supAuthenticated = true;
+    input.value = '';
+    errorEl.textContent = '';
+    input.style.borderColor = '';
+    document.getElementById('sup-login').style.display = 'none';
+    document.getElementById('sup-dashboard').style.display = 'block';
+    renderSupervisor();
+  } else {
+    errorEl.textContent = '⚠ Contraseña incorrecta';
+    input.style.borderColor = 'var(--red)';
+    input.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.12)';
+    input.select();
+  }
+}
+
+function logoutSupervisor() {
+  supAuthenticated = false;
+  document.getElementById('sup-login').style.display = 'flex';
+  document.getElementById('sup-dashboard').style.display = 'none';
+  document.getElementById('sup-pass-input').value = '';
+  document.getElementById('sup-login-error').textContent = '';
+  switchMode('cabo');
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODE SWITCH
+// ══════════════════════════════════════════════════════════════
+function switchMode(mode) {
+  document.getElementById('view-cabo').classList.toggle('active', mode === 'cabo');
+  document.getElementById('view-supervisor').classList.toggle('active', mode === 'supervisor');
+  document.getElementById('btn-cabo').classList.toggle('active', mode === 'cabo');
+  document.getElementById('btn-supervisor').classList.toggle('active', mode === 'supervisor');
+  if (mode === 'supervisor' && supAuthenticated) renderSupervisor();
+}
+
+// ══════════════════════════════════════════════════════════════
+// STEPS
+// ══════════════════════════════════════════════════════════════
+let currentStep = 1;
+function goStep(n) {
+  if (n === 2 && !validateStep1()) return;
+  if (n === 3 && document.getElementById('atenciones-list').children.length === 0) {
+    showToast('⚠ Agrega al menos una atención'); return;
+  }
+  currentStep = n;
+  [1,2,3].forEach(i => {
+    document.getElementById(`panel-${i}`).classList.toggle('active', i === n);
+    const s = document.getElementById(`s${i}`);
+    s.className = 'step' + (i === n ? ' active' : (i < n ? ' done' : ''));
+  });
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function validateStep1() {
+  const req = ['j-fecha','j-turno','j-cuadrilla','j-cabo'];
+  let ok = true;
+  req.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) {
+      el.style.borderColor = 'var(--red)';
+      el.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.12)';
+      ok = false;
+    } else {
+      el.style.borderColor = '';
+      el.style.boxShadow = '';
+    }
+  });
+  if (!ok) showToast('⚠ Completa los campos obligatorios');
+  return ok;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ATENCIONES
+// ══════════════════════════════════════════════════════════════
+let atencionCount = 0;
+
+function matRow(atId, tipo, rowId) {
+  return `
+    <div class="mat-row" id="mr-${atId}-${tipo}-${rowId}" style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+      <input type="text" placeholder="Selecciona o escribe material"
+        list="dl-materiales" autocomplete="off"
+        style="flex:1; padding:8px 10px; border:1.5px solid var(--gray3); border-radius:8px; font-size:13px;"
+        id="mat-${atId}-${tipo}-${rowId}-desc">
+      <input type="number" placeholder="Cant." min="0"
+        style="width:72px; padding:8px 10px; border:1.5px solid var(--gray3); border-radius:8px; font-size:13px;"
+        id="mat-${atId}-${tipo}-${rowId}-cant">
+      <button onclick="removeMatRow('${atId}','${tipo}','${rowId}')"
+        style="background:none; border:none; color:var(--gray4); font-size:18px; cursor:pointer; padding:2px 4px; border-radius:4px; flex-shrink:0;"
+        onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--gray4)'">×</button>
+    </div>`;
+}
+
+function addMatRow(atId, tipo) {
+  const container = document.getElementById(`mat-list-${atId}-${tipo}`);
+  const rows = container.querySelectorAll('.mat-row');
+  if (rows.length >= 15) { showToast('⚠ Máximo 15 materiales por sección'); return; }
+  const rowId = Date.now();
+  container.insertAdjacentHTML('beforeend', matRow(atId, tipo, rowId));
+}
+
+function removeMatRow(atId, tipo, rowId) {
+  const el = document.getElementById(`mr-${atId}-${tipo}-${rowId}`);
+  if (el) el.remove();
+}
+
+function addAtencion() {
+  atencionCount++;
+  const id = atencionCount;
+  const list = document.getElementById('atenciones-list');
+  const div = document.createElement('div');
+  div.className = 'atencion-item';
+  div.id = `at-${id}`;
+  div.innerHTML = `
+    <div class="atencion-header">
+      <span class="atencion-num">ATENCIÓN #${id}</span>
+      <button class="remove-btn" onclick="removeAtencion(${id})">×</button>
+    </div>
+
+    <div class="section-label" style="margin-top:0">Actividad</div>
+    <div class="grid-2">
+      <div class="field-group">
+        <label>Folio <span class="req">*</span></label>
+        <input type="text" id="at-${id}-folio" placeholder="Ej. F-2024-001" autocomplete="off">
+      </div>
+      <div class="field-group">
+        <label>Descripción de actividad</label>
+        <input type="text" id="at-${id}-desc" placeholder="Selecciona o escribe" list="dl-actividades" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="section-label">
+      Material Instalado
+      <span style="font-size:10px; color:var(--gray4); font-weight:400; text-transform:none; letter-spacing:0">
+        (máx. 15)
+      </span>
+    </div>
+    <div id="mat-list-${id}-inst" style="margin-bottom:6px;">
+      ${matRow(id, 'inst', Date.now())}
+    </div>
+    <button onclick="addMatRow(${id},'inst')"
+      style="width:100%; padding:7px; border:1.5px dashed var(--gray3); border-radius:8px;
+             background:none; color:var(--blue); font-size:12px; font-weight:700;
+             cursor:pointer; margin-bottom:4px; font-family:'Barlow Condensed',sans-serif;
+             letter-spacing:0.5px; text-transform:uppercase;"
+      onmouseover="this.style.borderColor='var(--blue)'; this.style.background='var(--blue-lt)'"
+      onmouseout="this.style.borderColor='var(--gray3)'; this.style.background='none'">
+      + Agregar material instalado
+    </button>
+
+    <div class="section-label" style="margin-top:12px;">
+      Material a Resguardo
+      <span style="font-size:10px; color:var(--gray4); font-weight:400; text-transform:none; letter-spacing:0">
+        (máx. 15)
+      </span>
+    </div>
+    <div id="mat-list-${id}-resg" style="margin-bottom:6px;">
+      ${matRow(id, 'resg', Date.now()+1)}
+    </div>
+    <button onclick="addMatRow(${id},'resg')"
+      style="width:100%; padding:7px; border:1.5px dashed var(--gray3); border-radius:8px;
+             background:none; color:var(--amber); font-size:12px; font-weight:700;
+             cursor:pointer; font-family:'Barlow Condensed',sans-serif;
+             letter-spacing:0.5px; text-transform:uppercase;"
+      onmouseover="this.style.borderColor='var(--amber)'; this.style.background='var(--amber-lt)'"
+      onmouseout="this.style.borderColor='var(--gray3)'; this.style.background='none'">
+      + Agregar material a resguardo
+    </button>
+  `;
+  list.appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function removeAtencion(id) {
+  const el = document.getElementById(`at-${id}`);
+  if (el) el.remove();
+}
+
+function collectAtenciones() {
+  const items = document.querySelectorAll('.atencion-item');
+  return Array.from(items).map(item => {
+    const atId = item.id.replace('at-','');
+
+    // Collect all inst rows
+    const instRows = item.querySelectorAll(`#mat-list-${atId}-inst .mat-row`);
+    const materiales_inst = Array.from(instRows).map(row => {
+      const rowId = row.id.replace(`mr-${atId}-inst-`,'');
+      return {
+        desc: document.getElementById(`mat-${atId}-inst-${rowId}-desc`)?.value || '',
+        cant: document.getElementById(`mat-${atId}-inst-${rowId}-cant`)?.value || '',
+      };
+    }).filter(r => r.desc.trim());
+
+    // Collect all resg rows
+    const resgRows = item.querySelectorAll(`#mat-list-${atId}-resg .mat-row`);
+    const materiales_resg = Array.from(resgRows).map(row => {
+      const rowId = row.id.replace(`mr-${atId}-resg-`,'');
+      return {
+        desc: document.getElementById(`mat-${atId}-resg-${rowId}-desc`)?.value || '',
+        cant: document.getElementById(`mat-${atId}-resg-${rowId}-cant`)?.value || '',
+      };
+    }).filter(r => r.desc.trim());
+
+    return {
+      folio:            document.getElementById(`at-${atId}-folio`)?.value || '',
+      desc:             document.getElementById(`at-${atId}-desc`)?.value || '',
+      materiales_inst,
+      materiales_resg,
+    };
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// SIGNATURE
+// ══════════════════════════════════════════════════════════════
+const canvas = document.getElementById('sig-canvas');
+const ctx = canvas.getContext('2d');
+let drawing = false, lastX = 0, lastY = 0;
+
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width  / rect.width;
+  const scaleY = canvas.height / rect.height;
+  if (e.touches) {
+    return { x: (e.touches[0].clientX - rect.left) * scaleX,
+             y: (e.touches[0].clientY - rect.top)  * scaleY };
+  }
+  return { x: (e.clientX - rect.left) * scaleX,
+           y: (e.clientY - rect.top)  * scaleY };
+}
+
+canvas.addEventListener('mousedown',  e => { drawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; });
+canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; }, {passive:false});
+canvas.addEventListener('mousemove',  e => { if (!drawing) return; drawLine(e); });
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!drawing) return; drawLine(e); }, {passive:false});
+canvas.addEventListener('mouseup',   () => drawing = false);
+canvas.addEventListener('touchend',  () => drawing = false);
+
+function drawLine(e) {
+  const p = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(p.x, p.y);
+  ctx.strokeStyle = '#1B2A47';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  lastX = p.x; lastY = p.y;
+}
+
+function clearSig() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+function getSig() {
+  const blank = document.createElement('canvas');
+  blank.width = canvas.width; blank.height = canvas.height;
+  return canvas.toDataURL() === blank.toDataURL() ? null : canvas.toDataURL();
+}
+
+// ══════════════════════════════════════════════════════════════
+// PDF GENERATION
+// ══════════════════════════════════════════════════════════════
+let lastReporte = null;
+
+function downloadPDF() {
+  if (!lastReporte) return;
+  const r = lastReporte;
+  const j = r.jornada;
+
+  const personal = [j.cabo, j.operador, j.ayud1, j.ayud2, j.ayud3].filter(Boolean);
+  const kmRec = (j.kmTer && j.kmIni) ? (parseInt(j.kmTer) - parseInt(j.kmIni)) + ' km' : '—';
+
+  let html = `
+  <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Bitácora ${j.cuadrilla} — ${j.fecha}</title>
+  <style>
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { font-family: Arial, sans-serif; font-size: 11px; color: #1a1a1a; padding: 24px; }
+    h1 { font-size: 16px; color: #1B2A47; border-bottom: 3px solid #1B2A47; padding-bottom: 6px; margin-bottom: 14px; }
+    h2 { font-size: 12px; background: #1B2A47; color: white; padding: 5px 10px; margin: 14px 0 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    h3 { font-size: 11px; background: #2E4172; color: white; padding: 4px 8px; margin: 10px 0 6px; border-radius: 3px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; margin-bottom: 8px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px 20px; margin-bottom: 8px; }
+    .field { margin-bottom: 4px; }
+    .field .lbl { font-size: 9px; color: #777; text-transform: uppercase; letter-spacing: 0.4px; }
+    .field .val { font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 2px; min-height: 16px; }
+    .atencion { border: 1px solid #ccc; border-radius: 4px; padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
+    .atencion-title { font-weight: bold; font-size: 12px; color: #1B2A47; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 10px; }
+    th { background: #EEF0F4; padding: 4px 6px; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.3px; }
+    td { padding: 4px 6px; border-bottom: 1px solid #f0f0f0; }
+    tr:last-child td { border-bottom: none; }
+    .sig-section { margin-top: 20px; display: flex; justify-content: flex-end; }
+    .sig-box { text-align: center; }
+    .sig-box img { height: 60px; border: 1px solid #ccc; border-radius: 4px; display: block; margin-bottom: 4px; }
+    .sig-box .lbl { font-size: 9px; color: #777; text-transform: uppercase; }
+    .footer { margin-top: 20px; font-size: 9px; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 8px; }
+    .obs-box { border: 1px solid #ddd; border-radius: 4px; padding: 8px; min-height: 36px; font-size: 11px; color: #444; }
+  </style></head><body>
+
+  <h1>⚡ BITÁCORA DE JORNADA — ${j.cuadrilla.toUpperCase()}</h1>
+
+  <h2>Datos de la Jornada</h2>
+  <div class="grid">
+    <div class="field"><div class="lbl">Fecha</div><div class="val">${j.fecha}</div></div>
+    <div class="field"><div class="lbl">Turno</div><div class="val">${j.turno}</div></div>
+    <div class="field"><div class="lbl">Cabo</div><div class="val">${j.cabo}</div></div>
+    <div class="field"><div class="lbl">Operador / Chofer</div><div class="val">${j.operador || '—'}</div></div>
+    <div class="field"><div class="lbl">Unidad</div><div class="val">${j.unidad || '—'}</div></div>
+    <div class="field"><div class="lbl">Placa</div><div class="val">${j.placa || '—'}</div></div>
+    <div class="field"><div class="lbl">Km Inicio</div><div class="val">${j.kmIni || '—'}</div></div>
+    <div class="field"><div class="lbl">Km Término</div><div class="val">${j.kmTer || '—'}</div></div>
+    <div class="field"><div class="lbl">Recorrido</div><div class="val">${kmRec}</div></div>
+    <div class="field"><div class="lbl">Combustible</div><div class="val">${j.combust ? j.combust + ' L' : '—'}</div></div>
+  </div>
+
+  <h2>Personal Asignado</h2>
+  <div class="grid-3">
+    ${personal.map((p, i) => `
+      <div class="field">
+        <div class="lbl">${i === 0 ? 'Cabo' : i === 1 ? 'Operador' : 'Ayudante ' + (i - 1)}</div>
+        <div class="val">${p}</div>
+      </div>`).join('')}
+  </div>
+
+  <h2>Atenciones Realizadas (${r.atenciones.length})</h2>
+  ${r.atenciones.map((a, idx) => `
+    <div class="atencion">
+      <div class="atencion-title">Atención #${idx + 1} — Folio: ${a.folio || '—'}</div>
+      <div class="field" style="margin-bottom:8px">
+        <div class="lbl">Actividad realizada</div>
+        <div class="val">${a.desc || '—'}</div>
+      </div>
+      ${a.materiales_inst?.length ? `
+        <h3>Material Instalado</h3>
+        <table>
+          <tr><th>Material</th><th style="width:80px">Cantidad</th></tr>
+          ${a.materiales_inst.map(m => `<tr><td>${m.desc}</td><td>${m.cant || '—'}</td></tr>`).join('')}
+        </table>` : ''}
+      ${a.materiales_resg?.length ? `
+        <h3 style="background:#C0600A">Material a Resguardo</h3>
+        <table>
+          <tr><th>Material</th><th style="width:80px">Cantidad</th></tr>
+          ${a.materiales_resg.map(m => `<tr><td>${m.desc}</td><td>${m.cant || '—'}</td></tr>`).join('')}
+        </table>` : ''}
+    </div>
+  `).join('')}
+
+  ${j.obs ? `
+    <h2>Observaciones</h2>
+    <div class="obs-box">${j.obs}</div>` : ''}
+
+  <div class="sig-section">
+    <div class="sig-box">
+      ${r.firma ? `<img src="${r.firma}" alt="Firma">` : '<div style="height:60px;width:180px;border:1px solid #ccc;border-radius:4px;"></div>'}
+      <div class="lbl">Firma del Cabo — ${j.cabo}</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Bitácora GP · Alumbrado Público · Generado el ${new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'long', year:'numeric'})}
+  </div>
+
+  <script>window.onload = () => window.print();<\/script>
+  </body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const win  = window.open(url, '_blank');
+  if (!win) {
+    // fallback: direct download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Bitacora_${j.cuadrilla.replace(' ','_')}_${j.fecha}.html`;
+    a.click();
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwnbzrPZu1JfydwV1Oaw159EHE9qjNato_XjVV4C8k2LAO7v96vqTZC0u1bESJ3GMzyVw/exec";
+
+async function sendToSheets(reporte) {
+  try {
+    await fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reporte),
+    });
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// SUBMIT
+// ══════════════════════════════════════════════════════════════
+async function submitReporte() {
+  const sig = getSig();
+  if (!sig) { showToast('⚠ Se requiere la firma del cabo'); return; }
+
+  const atenciones = collectAtenciones();
+  if (atenciones.some(a => !a.folio.trim())) {
+    showToast('⚠ Cada atención necesita un folio'); return;
+  }
+
+  const reporte = {
+    id:         Date.now().toString(),
+    status:     isOnline ? 'sent' : 'pending',
+    createdAt:  new Date().toISOString(),
+    syncedAt:   isOnline ? new Date().toISOString() : null,
+    jornada: {
+      fecha:     document.getElementById('j-fecha').value,
+      turno:     document.getElementById('j-turno').value,
+      cuadrilla: document.getElementById('j-cuadrilla').value,
+      cabo:      document.getElementById('j-cabo').value,
+      operador:  document.getElementById('j-operador').value,
+      placa:     document.getElementById('j-placa').value,
+      unidad:    document.getElementById('j-unidad').value,
+      ayud1:     document.getElementById('j-ay1').value,
+      ayud2:     document.getElementById('j-ay2').value,
+      ayud3:     document.getElementById('j-ay3').value,
+      kmIni:     document.getElementById('j-km-ini').value,
+      kmTer:     document.getElementById('j-km-ter').value,
+      combust:   document.getElementById('j-combust').value,
+      obs:       document.getElementById('j-obs').value,
+    },
+    atenciones,
+    firma: sig,
+  };
+
+  DB.reportes.push(reporte);
+  saveDB();
+  lastReporte = reporte;
+
+  if (isOnline) {
+    showToast('📤 Enviando reporte...');
+    const ok = await sendToSheets(reporte);
+    reporte.status = 'sent';
+    saveDB();
+    showToast(ok ? '✓ Reporte guardado en Sheets' : '💾 Guardado localmente — reintentando después');
+  } else {
+    showToast('💾 Sin conexión — se enviará al recuperar señal');
+  }
+
+  // Mostrar botón PDF antes de resetear
+  document.getElementById('pdf-row').style.display = 'block';
+  document.querySelector('#panel-3 .btn-green').style.display = 'none';
+  document.querySelector('#panel-3 .btn-ghost').style.display = 'none';
+}
+
+function resetForm() {
+  ['j-fecha','j-turno','j-cuadrilla','j-cabo','j-operador','j-placa','j-unidad',
+   'j-ay1','j-ay2','j-ay3','j-km-ini','j-km-ter','j-combust','j-obs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('atenciones-list').innerHTML = '';
+  atencionCount = 0;
+  clearSig();
+  goStep(1);
+
+  // Set today's date
+  document.getElementById('j-fecha').value = new Date().toISOString().split('T')[0];
+}
+
+// ══════════════════════════════════════════════════════════════
+// SUPERVISOR VIEW
+// ══════════════════════════════════════════════════════════════
+function renderSupervisor() {
+  const fcuad  = document.getElementById('f-cuadrilla').value;
+  const ffecha = document.getElementById('f-fecha').value;
+  const list   = document.getElementById('sup-list');
+  const pending = DB.reportes.filter(r => r.status === 'pending').length;
+
+  // Sync row
+  const syncRow = document.getElementById('sync-pending-row');
+  if (pending > 0) {
+    syncRow.innerHTML = `<div class="sync-row">
+      <span>📵 ${pending} reporte(s) pendientes de sincronizar</span>
+      <button class="btn btn-amber btn-sm" onclick="trySyncPending()">Sincronizar ahora</button>
+    </div>`;
+  } else {
+    syncRow.innerHTML = '';
+  }
+
+  let reportes = [...DB.reportes].sort((a,b) => b.createdAt.localeCompare(a.createdAt));
+  if (fcuad)  reportes = reportes.filter(r => r.jornada.cuadrilla === fcuad);
+  if (ffecha) reportes = reportes.filter(r => r.jornada.fecha === ffecha);
+
+  if (!reportes.length) {
+    list.innerHTML = `<div class="empty"><div class="icon">📋</div><p>No hay reportes registrados aún</p></div>`;
+    return;
+  }
+
+  list.innerHTML = reportes.map(r => {
+    const j = r.jornada;
+    const km = (j.kmTer && j.kmIni) ? (parseInt(j.kmTer) - parseInt(j.kmIni)) + ' km' : '—';
+    const personal = [j.cabo, j.operador, j.ayud1, j.ayud2, j.ayud3].filter(Boolean).length;
+    const statusLabel = r.status === 'sent' ? '<span class="badge badge-sent">✓ Enviado</span>' : '<span class="badge badge-draft">⏳ Pendiente</span>';
+    const folios = r.atenciones.map(a => a.folio).filter(Boolean).join(', ') || '—';
+
+    return `
+    <div class="report-card ${r.status === 'pending' ? 'offline-card' : ''}" onclick="toggleReport('${r.id}')">
+      <div class="report-card-head">
+        <div>
+          <h4>${j.cuadrilla} — ${formatDate(j.fecha)}</h4>
+          <div style="font-size:12px; color:var(--gray4); margin-top:2px">${j.turno} · Cabo: ${j.cabo}</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px">
+          ${statusLabel}
+          <span style="font-size:11px; color:var(--gray4)">${r.atenciones.length} atención(es)</span>
+        </div>
+      </div>
+      <div class="report-card-body" id="rb-${r.id}">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="lbl">Operador</div>${j.operador || '—'}</div>
+          <div class="detail-item"><div class="lbl">Unidad / Placa</div>${j.unidad || '—'} · ${j.placa || '—'}</div>
+          <div class="detail-item"><div class="lbl">Personal total</div>${personal} personas</div>
+          <div class="detail-item"><div class="lbl">Recorrido</div>${km}</div>
+          <div class="detail-item"><div class="lbl">Combustible</div>${j.combust ? j.combust + ' L' : '—'}</div>
+          <div class="detail-item"><div class="lbl">Ayudantes</div>${[j.ayud1,j.ayud2,j.ayud3].filter(Boolean).join(', ') || '—'}</div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div class="lbl" style="font-size:11px; font-weight:600; color:var(--gray4); text-transform:uppercase; margin-bottom:4px">Folios atendidos</div>
+          <div style="font-size:13px; font-weight:600; color:var(--navy)">${folios}</div>
+        </div>
+        ${r.atenciones.map((a,i) => `
+          <div style="border:1px solid var(--gray2); border-radius:8px; padding:10px; margin-bottom:8px; background:var(--gray1)">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+              <span style="font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; color:var(--navy)">Folio: ${a.folio || '—'}</span>
+            </div>
+            <div style="font-size:12px; color:var(--gray5); margin-bottom:6px"><strong>Actividad:</strong> ${a.desc || '—'}</div>
+            ${a.materiales_inst?.length ? `
+              <div style="margin-bottom:4px"><span style="font-size:11px; font-weight:700; color:var(--blue); text-transform:uppercase;">Instalado</span>
+              ${a.materiales_inst.map(m => `<div style="font-size:12px; padding-left:8px">• ${m.desc} ${m.cant ? '— '+m.cant+' pza(s)' : ''}</div>`).join('')}
+              </div>` : ''}
+            ${a.materiales_resg?.length ? `
+              <div><span style="font-size:11px; font-weight:700; color:var(--amber); text-transform:uppercase;">Resguardo</span>
+              ${a.materiales_resg.map(m => `<div style="font-size:12px; padding-left:8px">• ${m.desc} ${m.cant ? '— '+m.cant+' pza(s)' : ''}</div>`).join('')}
+              </div>` : ''}
+          </div>
+        `).join('')}
+        ${j.obs ? `<div style="font-size:13px; color:var(--gray5); margin-top:8px"><strong>Observaciones:</strong> ${j.obs}</div>` : ''}
+        ${r.firma ? `<div style="margin-top:10px"><div class="lbl" style="font-size:11px;font-weight:600;color:var(--gray4);text-transform:uppercase;margin-bottom:4px">Firma del Cabo</div><img src="${r.firma}" style="border:1px solid var(--gray3);border-radius:6px;max-height:80px;background:white"></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleReport(id) {
+  const body = document.getElementById(`rb-${id}`);
+  if (body) body.classList.toggle('open');
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ══════════════════════════════════════════════════════════════
+// CATÁLOGOS DE PERSONAL — edita estos arreglos con los datos reales
+// ══════════════════════════════════════════════════════════════
+const CABOS = [
+  "Carlos Méndez Ruiz",
+  "Roberto Hernández López",
+  "Miguel Ángel Torres",
+  "Jorge Luis Pérez",
+  "Antonio García Soto",
+  "Francisco Ramírez Cruz",
+  "Eduardo Morales Vega",
+];
+const OPERADORES = [
+  "Juan Pablo Flores",
+  "Sergio Alvarado Díaz",
+  "Martín Gutiérrez Rojas",
+  "Alejandro Sánchez Nava",
+  "Daniel Reyes Castillo",
+  "Ernesto Vargas Luna",
+];
+const AYUDANTES = [
+  "Luis Alberto Jiménez",
+  "Oscar Mendoza Ríos",
+  "Raúl Fuentes Ortega",
+  "Iván Delgado Mora",
+  "Héctor Montes Bravo",
+  "Gerardo Salinas Cruz",
+  "Pablo Ramos Medina",
+  "Fernando Castro Nuñez",
+  "Rubén Leal Paredes",
+  "Andrés Villanueva Soto",
+  "Marco Antonio Reyes",
+  "Josué Espinoza Lima",
+];
+const PLACAS = [
+  "ABC-123", "DEF-456", "GHI-789",
+  "JKL-012", "MNO-345", "PQR-678", "STU-901",
+];
+const UNIDADES = [
+  "Camioneta 01", "Camioneta 02", "Camioneta 03", "Camioneta 04",
+  "Grúa 01", "Grúa 02", "Pick-up 01",
+];
+
+const MATERIALES = [
+  // Sección A — Luminarias y componentes eléctricos
+  "Abrazadera para poste de concreto",
+  "Balastro electrónico de 140 W",
+  "Base receptáculo para fotocelda",
+  "Brazo de 180 cm, 2\" de diámetro",
+  "Brazo de 50 cm, 2\" de diámetro",
+  "Brazo de diseño de 60 cm",
+  "Cable de aluminio AAC-AAC (2+1) cal. 6",
+  "Cable de cobre calibre núm. 14 AWG",
+  "Contactor de platinos de 2 X 40 A",
+  "Contactor de platinos de 3 X 70 A",
+  "Fleje de acero inoxidable 304, cal. 26",
+  "Fotocelda",
+  "Grapa banda para fleje",
+  "Lámpara de 140 W base PGZ 12",
+  "Lámpara de 140 W E-39 o 40 mm",
+  "Luminaria Baliza",
+  "Luminaria Urban City",
+  "Luminario LED de 100 W con fotocelda",
+  "Luminario LED de 50 W con fotocelda",
+  "Luminario tipo 1900 LED",
+  "Reflector (proyector) LED de 70 W",
+  "Socket de porcelana PGZ 12",
+  "Socket Mogul",
+  // Sección B — Civil y postes
+  "Alambrón de 1/4\"",
+  "Ancla de 3/4\"",
+  "Ángulo de 1 1/2\" x 1 1/2\" x 3/16\"",
+  "Ángulo de 1 1/4\" x 1 1/4\" x 3/16\"",
+  "Ángulo de 1\" x 1\" x 3/16\"",
+  "Arena gris de mina fina",
+  "Cemento portland tipo I",
+  "Cimiento de 60 x 40 x 60 cm",
+  "Cimiento de 80 x 60 x 80 cm",
+  "Grava 3/4\" gris",
+  "Pintura color gris Oxford",
+  "Poste 12 m",
+  "Poste 5 m",
+  "Poste 7.5 m patín 19",
+  "Poste 9 m patín 19",
+  "Poste ornamental tipo 1900 con un rizo",
+  "Registro de 40 x 40 cm con tapa",
+  "Soldadura",
+  "Solera de 2\" x 3/16\" - 6 m de largo",
+  "Thinner estándar",
+  "Tubo PAD de 2\" de diámetro",
+  "Varilla de 3/8\"",
+];
+
+const ACTIVIDADES = [
+  "Cambio de luminaria LED",
+  "Cambio de luminaria tipo 1900",
+  "Cambio de balastro",
+  "Cambio de fotocelda",
+  "Cambio de socket",
+  "Cambio de brazo",
+  "Instalación de poste",
+  "Cambio de poste",
+  "Instalación de luminaria nueva",
+  "Revisión y mantenimiento preventivo",
+  "Reparación de acometida",
+  "Instalación de registro",
+  "Cambio de cable",
+  "Instalación de contactor",
+  "Pintura de poste",
+];
+
+function buildDatalist(id, items) {
+  let dl = document.getElementById(id);
+  if (!dl) { dl = document.createElement('datalist'); dl.id = id; document.body.appendChild(dl); }
+  dl.innerHTML = items.map(i => `<option value="${i}">`).join('');
+}
+
+function initCatalogos() {
+  buildDatalist('dl-cabos',      CABOS);
+  buildDatalist('dl-operadores', OPERADORES);
+  buildDatalist('dl-ayudantes',  AYUDANTES);
+  buildDatalist('dl-placas',     PLACAS);
+  buildDatalist('dl-unidades',   UNIDADES);
+  buildDatalist('dl-materiales', MATERIALES);
+  buildDatalist('dl-actividades',ACTIVIDADES);
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+document.getElementById('j-fecha').value = new Date().toISOString().split('T')[0];
+initCatalogos();
+</script>
+</body>
+</html>
