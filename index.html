@@ -816,15 +816,23 @@ function validateStep1() {
 let atencionCount = 0;
 
 function matRow(atId, tipo, rowId) {
+  const showCondicion = tipo === 'inst';
   return `
-    <div class="mat-row" id="mr-${atId}-${tipo}-${rowId}" style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+    <div class="mat-row" id="mr-${atId}-${tipo}-${rowId}" style="display:flex; gap:6px; align-items:center; margin-bottom:6px; flex-wrap:wrap;">
       <input type="text" placeholder="Selecciona o escribe material"
         list="dl-materiales" autocomplete="off"
-        style="flex:1; padding:8px 10px; border:1.5px solid var(--gray3); border-radius:8px; font-size:13px;"
+        style="flex:2; min-width:160px; padding:8px 10px; border:1.5px solid var(--gray3); border-radius:8px; font-size:13px;"
         id="mat-${atId}-${tipo}-${rowId}-desc">
       <input type="number" placeholder="Cant." min="0"
-        style="width:72px; padding:8px 10px; border:1.5px solid var(--gray3); border-radius:8px; font-size:13px;"
+        style="width:64px; padding:8px 10px; border:1.5px solid var(--gray3); border-radius:8px; font-size:13px;"
         id="mat-${atId}-${tipo}-${rowId}-cant">
+      ${showCondicion ? `
+      <select id="mat-${atId}-${tipo}-${rowId}-cond"
+        style="padding:8px 6px; border:1.5px solid var(--gray3); border-radius:8px; font-size:12px; color:var(--gray5); background:white; cursor:pointer;">
+        <option value="Nuevo">🆕 Nuevo</option>
+        <option value="Recuperado">♻️ Recuperado</option>
+        <option value="Reúso">🔄 Reúso</option>
+      </select>` : ''}
       <button onclick="removeMatRow('${atId}','${tipo}','${rowId}')"
         style="background:none; border:none; color:var(--gray4); font-size:18px; cursor:pointer; padding:2px 4px; border-radius:4px; flex-shrink:0;"
         onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--gray4)'">×</button>
@@ -926,8 +934,9 @@ function collectAtenciones() {
     const materiales_inst = Array.from(instRows).map(row => {
       const rowId = row.id.replace(`mr-${atId}-inst-`,'');
       return {
-        desc: document.getElementById(`mat-${atId}-inst-${rowId}-desc`)?.value || '',
-        cant: document.getElementById(`mat-${atId}-inst-${rowId}-cant`)?.value || '',
+        desc:  document.getElementById(`mat-${atId}-inst-${rowId}-desc`)?.value || '',
+        cant:  document.getElementById(`mat-${atId}-inst-${rowId}-cant`)?.value || '',
+        cond:  document.getElementById(`mat-${atId}-inst-${rowId}-cond`)?.value || 'Nuevo',
       };
     }).filter(r => r.desc.trim());
 
@@ -1199,8 +1208,8 @@ function resetForm() {
   clearSig();
   goStep(1);
 
-  // Set today's date
-  document.getElementById('j-fecha').value = new Date().toISOString().split('T')[0];
+  // Fecha según hora de jornada (cambia a las 07:00)
+  document.getElementById('j-fecha').value = getJornadaDate();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1272,7 +1281,7 @@ function renderSupervisor() {
             <div style="font-size:12px; color:var(--gray5); margin-bottom:6px"><strong>Actividad:</strong> ${a.desc || '—'}</div>
             ${a.materiales_inst?.length ? `
               <div style="margin-bottom:4px"><span style="font-size:11px; font-weight:700; color:var(--blue); text-transform:uppercase;">Instalado</span>
-              ${a.materiales_inst.map(m => `<div style="font-size:12px; padding-left:8px">• ${m.desc} ${m.cant ? '— '+m.cant+' pza(s)' : ''}</div>`).join('')}
+              ${a.materiales_inst.map(m => `<div style="font-size:12px; padding-left:8px">• ${m.desc} ${m.cant ? '— '+m.cant+' pza(s)' : ''} <span style="color:var(--gray4)">[${m.cond || 'Nuevo'}]</span></div>`).join('')}
               </div>` : ''}
             ${a.materiales_resg?.length ? `
               <div><span style="font-size:11px; font-weight:700; color:var(--amber); text-transform:uppercase;">Resguardo</span>
@@ -1314,151 +1323,111 @@ function showToast(msg) {
 // CATÁLOGOS DE PERSONAL — edita estos arreglos con los datos reales
 // ══════════════════════════════════════════════════════════════
 const CABOS = [
-  "Aristeo Colli Peña",
-  "Cesar Díaz Jiménez",
-  "Cesar Javier Mejía Acosta",
-  "Daniel González Mora",
-  "David Rosales Hernández",
-  "Efrén Teoyotl Carrillo",
-  "Héctor Jesús García Ávila",
-  "José Manuel González Colin",
-  "Juan Gabriel Rodríguez Niño",
-  "Juan Inocencio Márquez Vergara",
-  "Leonardo Daza Serrano",
+  "Carlos Méndez Ruiz",
+  "Roberto Hernández López",
+  "Miguel Ángel Torres",
+  "Jorge Luis Pérez",
+  "Antonio García Soto",
+  "Francisco Ramírez Cruz",
+  "Eduardo Morales Vega",
 ];
 const OPERADORES = [
-  "Azael Ortiz Pérez",
-  "Cesar Javier Mejía Acosta",
-  "Daniel Alejandro Castillo García",
-  "Erick Antonio Deloya Ramos",
-  "Javier Iván Pérez Campos",
-  "Jonathan Tadeo Diaz García",
-  "Jorge Rosales Hernández",
-  "José Luis Pérez Gómez",
-  "Samuel García Ángeles",
-  "Tomas Cardoso Reyes",
+  "Juan Pablo Flores",
+  "Sergio Alvarado Díaz",
+  "Martín Gutiérrez Rojas",
+  "Alejandro Sánchez Nava",
+  "Daniel Reyes Castillo",
+  "Ernesto Vargas Luna",
 ];
 const AYUDANTES = [
-  "Agripino Cabrera Luna",
-  "Alejandro Cirilo López López",
-  "Alejandro Diaz Estrada",
-  "Álvaro Tapia Cuamatzi",
-  "Arturo Avilés Vázquez",
-  "Brandon Jair Isidro Martínez",
-  "Carlos Augusto Orduña Gjumlich",
-  "Erick Armando Batalla Espinosa de los Monteros",
-  "Felipe Olguín Ildefonso",
-  "Geordy Gabriel Santiago Mendoza",
-  "Irvin Samaniego Morán",
-  "José Ángel Ramos Robles",
-  "Josué Edmundo Moreno Flores",
-  "Josué Olguín Pioquinto",
-  "Luis Manuel Isidro Naranjo",
-  "Marcos Eduardo García Mora",
-  "Oscar García Cabrera",
-  "Oscar Paulino Pérez",
-  "Ranfelix Carmona Baños",
-  "Saúl Santiago Castillo Morán",
-  "Snaider Jesús Martínez Ávila",
-  "Víctor Villagrán Guzmán",
-  "Víctor Yael Bustamante Reyes",
+  "Luis Alberto Jiménez",
+  "Oscar Mendoza Ríos",
+  "Raúl Fuentes Ortega",
+  "Iván Delgado Mora",
+  "Héctor Montes Bravo",
+  "Gerardo Salinas Cruz",
+  "Pablo Ramos Medina",
+  "Fernando Castro Nuñez",
+  "Rubén Leal Paredes",
+  "Andrés Villanueva Soto",
+  "Marco Antonio Reyes",
+  "Josué Espinoza Lima",
 ];
 const PLACAS = [
-  "KR-3911-A",
-  "XJ-57789-A",
-  "LF-11-366",
-  "A-848-AH",
-  "LF-528-44",
-  "LF-16-964",
-  "LG-21-400",
-  "A-849-AH",
+  "ABC-123", "DEF-456", "GHI-789",
+  "JKL-012", "MNO-345", "PQR-678", "STU-901",
 ];
 const UNIDADES = [
-  "AP-081 — RAM",
-  "AP-082 — INTERNATIONAL",
-  "AP-083 — ISUZU",
-  "AP-084 — ISUZU",
-  "AP-085 — FREIGHTLINER",
-  "AP-086 — SILVERADO",
-  "AP-087 — INTERNATIONAL",
-  "AP-088 — ISUZU",
+  "Camioneta 01", "Camioneta 02", "Camioneta 03", "Camioneta 04",
+  "Grúa 01", "Grúa 02", "Pick-up 01",
 ];
+
 const MATERIALES = [
-  "Abrazadera tipo CFE",
-  "Abrazadera omega",
-  "Anclas de ¾ (4 pz)",
-  "Anclas de 1\" (4 pz)",
-  "Ángulo de 1¼",
-  "Ángulo de 1½",
-  "Arena",
-  "Balastro electromag. 140 W",
-  "Balastro electromag. 250 W",
-  "Balastro electrónico 140 W",
-  "Base receptáculo",
-  "Brazo curvo 6 m con base",
-  "Brazo 100 cm",
-  "Brazo de diseño",
-  "Brazo galvanizado 180 cm",
-  "Brazo galvanizado 50 cm",
-  "Cable AL (2+1) cal. 6",
-  "Cable AL (2+1) cal. SUB",
-  "Cable CU cal. 14 AWG",
-  "Cemento portland",
-  "Cimiento 100*100",
-  "Cimiento 60*60*40",
-  "Cimiento 70*70*50",
-  "Cimiento 80*80",
-  "Fleje de acero inoxidable",
+  // Sección A — Luminarias y componentes eléctricos
+  "Abrazadera para poste de concreto",
+  "Balastro electrónico de 140 W",
+  "Base receptáculo para fotocelda",
+  "Brazo de 180 cm, 2\" de diámetro",
+  "Brazo de 50 cm, 2\" de diámetro",
+  "Brazo de diseño de 60 cm",
+  "Cable de aluminio AAC-AAC (2+1) cal. 6",
+  "Cable de cobre calibre núm. 14 AWG",
+  "Contactor de platinos de 2 X 40 A",
+  "Contactor de platinos de 3 X 70 A",
+  "Fleje de acero inoxidable 304, cal. 26",
   "Fotocelda",
-  "Fotocontrol de 2*40 A",
-  "Fotocontrol de 3*70 A",
-  "Grapa de acero inoxidable",
-  "Grava",
-  "Lámpara AM 140 W PGZ",
-  "Lámpara E39 140 W",
-  "Lámpara E39 250 W",
-  "Luminaria PP LED 100 W",
-  "Luminaria tipo baliza",
-  "Luminaria urban city",
-  "Luminario LED 100 W",
-  "Luminario LED 100 W (rec)",
-  "Luminario LED 170 W",
-  "Luminario LED 250 W",
-  "Luminario LED 50 W",
-  "Luminario LED 50 W (rec)",
-  "Luminario tipo 1900",
-  "Pintura negra",
-  "Pintura gris Oxford",
-  "Poste 5 m",
-  "Poste 7.5 m",
-  "Poste 9 m",
+  "Grapa banda para fleje",
+  "Lámpara de 140 W base PGZ 12",
+  "Lámpara de 140 W E-39 o 40 mm",
+  "Luminaria Baliza",
+  "Luminaria Urban City",
+  "Luminario LED de 100 W con fotocelda",
+  "Luminario LED de 50 W con fotocelda",
+  "Luminario tipo 1900 LED",
+  "Reflector (proyector) LED de 70 W",
+  "Socket de porcelana PGZ 12",
+  "Socket Mogul",
+  // Sección B — Civil y postes
+  "Alambrón de 1/4\"",
+  "Ancla de 3/4\"",
+  "Ángulo de 1 1/2\" x 1 1/2\" x 3/16\"",
+  "Ángulo de 1 1/4\" x 1 1/4\" x 3/16\"",
+  "Ángulo de 1\" x 1\" x 3/16\"",
+  "Arena gris de mina fina",
+  "Cemento portland tipo I",
+  "Cimiento de 60 x 40 x 60 cm",
+  "Cimiento de 80 x 60 x 80 cm",
+  "Grava 3/4\" gris",
+  "Pintura color gris Oxford",
   "Poste 12 m",
-  "Poste tipo 1900 con rizo",
-  "Proyector 70 W",
-  "Reflector ADM 870 W",
-  "Socket mogul",
-  "Socket Porcelana PGZ12",
-  "Soldadura E-6013",
-  "Solera 1 1/4",
-  "Solera 2\" 3/16",
-  "Tapa de registro",
-  "Thinner",
-  "Tubo pad 2\"",
-  "Varilla de ⅜",
+  "Poste 5 m",
+  "Poste 7.5 m patín 19",
+  "Poste 9 m patín 19",
+  "Poste ornamental tipo 1900 con un rizo",
+  "Registro de 40 x 40 cm con tapa",
+  "Soldadura",
+  "Solera de 2\" x 3/16\" - 6 m de largo",
+  "Thinner estándar",
+  "Tubo PAD de 2\" de diámetro",
+  "Varilla de 3/8\"",
 ];
+
 const ACTIVIDADES = [
-  "Apoyo DAP",
-  "Cableado",
-  "Cambio de componentes",
-  "Conexión a líneas de alimentación",
-  "Instalación de componentes",
-  "Mantenimiento",
-  "Reacomodo de componentes",
-  "Reconexión a líneas de alimentación",
-  "Rehabilitación",
-  "Reparación",
-  "Restablecimiento de ITM",
-  "Retiro de componentes",
+  "Cambio de luminaria LED",
+  "Cambio de luminaria tipo 1900",
+  "Cambio de balastro",
+  "Cambio de fotocelda",
+  "Cambio de socket",
+  "Cambio de brazo",
+  "Instalación de poste",
+  "Cambio de poste",
+  "Instalación de luminaria nueva",
+  "Revisión y mantenimiento preventivo",
+  "Reparación de acometida",
+  "Instalación de registro",
+  "Cambio de cable",
+  "Instalación de contactor",
+  "Pintura de poste",
 ];
 
 function buildDatalist(id, items) {
@@ -1480,7 +1449,16 @@ function initCatalogos() {
 // ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
-document.getElementById('j-fecha').value = new Date().toISOString().split('T')[0];
+function getJornadaDate() {
+  const now = new Date();
+  // Si es antes de las 07:00, la jornada pertenece al día anterior
+  if (now.getHours() < 7) {
+    now.setDate(now.getDate() - 1);
+  }
+  return now.toISOString().split('T')[0];
+}
+
+document.getElementById('j-fecha').value = getJornadaDate();
 initCatalogos();
 </script>
 </body>
